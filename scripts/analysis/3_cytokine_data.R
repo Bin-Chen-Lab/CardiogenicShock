@@ -102,9 +102,8 @@ ggsave(filename = "cs_project/cytokine_data/results/volcano_cytokines.pdf", plot
 # p_loadings
 # ggsave("cs_project/cytokine_data/results/PCA_loadings.png", p_loadings, width = 7, height = 6, dpi = 600)
 
-#========================
+
 # 6. Predictive models
-#========================
 library(pROC)
 
 y <- ifelse(data_cd_log$SCAIStage == "D", 1, 0)
@@ -163,19 +162,21 @@ results_df <- results_df %>%
 results_df
 write.csv(results_df, "cs_project/cytokine_data/results/cytokine_confounding interactive_results_C_vs_D.csv", row.names = FALSE)
 
-# “ST2 levels increased from Stage C to Stage D in both sexes, with a trend toward a greater increase in females compared with males.”
-p_st2_sex <- ggplot(data_cd_log, aes(x = SCAIStage, y = ST2, color = Sex)) + 
-  geom_boxplot(aes(group = interaction(SCAIStage, Sex)), position = position_dodge(width = 0.75), width = 0.45, fill = "lightgrey", linewidth = 1) +
-  stat_summary(aes(group = interaction(SCAIStage, Sex)), fun = mean, geom = "point", position = position_dodge(width = 0.75), size = 3, shape = 18, color = "black") +
-  scale_color_manual(values = c("f" = "brown", "m" = "darkgreen")) + theme_bw() +
-  labs(title = "ST2", x = "SCAI Stage", y = "log1p(ST2)", color = "Sex")
-p_st2_sex
-ggsave("cs_project/cytokine_data/results/ST2_stage_sex.png", p_st2_sex, width = 6, height = 5, dpi = 600)
-ggsave("cs_project/cytokine_data/results/ST2_stage_sex.pdf", p_st2_sex, width = 6, height = 5)
 
-# “There was a trend toward interaction between age and SCAI stage for S100A8, suggesting that the relationship between age and S100A8 may differ by disease severity”
-p_s100a8_age <- ggplot(data_cd_log, aes(x = Age, y = S100A8, color = SCAIStage)) + geom_point(size = 2) + geom_smooth(method = "lm", se = TRUE) + theme_bw() +
-  scale_color_manual(values = c("C" = "steelblue", "D" = "darkred")) + labs(title = "S100A8", x = "Age", y = "S100A8")
-p_s100a8_age
-ggsave("cs_project/cytokine_data/results/S100A8_age_stage.png", p_s100a8_age, width = 6, height = 5, dpi = 600)
-ggsave("cs_project/cytokine_data/results/S100A8_age_stage.pdf", p_s100a8_age, width = 6, height = 5)
+# Optional
+# # “ST2 levels increased from Stage C to Stage D in both sexes, with a trend toward a greater increase in females compared with males.”
+# p_st2_sex <- ggplot(data_cd_log, aes(x = SCAIStage, y = ST2, color = Sex)) + 
+#   geom_boxplot(aes(group = interaction(SCAIStage, Sex)), position = position_dodge(width = 0.75), width = 0.45, fill = "lightgrey", linewidth = 1) +
+#   stat_summary(aes(group = interaction(SCAIStage, Sex)), fun = mean, geom = "point", position = position_dodge(width = 0.75), size = 3, shape = 18, color = "black") +
+#   scale_color_manual(values = c("f" = "brown", "m" = "darkgreen")) + theme_bw() +
+#   labs(title = "ST2", x = "SCAI Stage", y = "log1p(ST2)", color = "Sex")
+# p_st2_sex
+# ggsave("cs_project/cytokine_data/results/ST2_stage_sex.png", p_st2_sex, width = 6, height = 5, dpi = 600)
+# ggsave("cs_project/cytokine_data/results/ST2_stage_sex.pdf", p_st2_sex, width = 6, height = 5)
+# 
+# # “There was a trend toward interaction between age and SCAI stage for S100A8, suggesting that the relationship between age and S100A8 may differ by disease severity”
+# p_s100a8_age <- ggplot(data_cd_log, aes(x = Age, y = S100A8, color = SCAIStage)) + geom_point(size = 2) + geom_smooth(method = "lm", se = TRUE) + theme_bw() +
+#   scale_color_manual(values = c("C" = "steelblue", "D" = "darkred")) + labs(title = "S100A8", x = "Age", y = "S100A8")
+# p_s100a8_age
+# ggsave("cs_project/cytokine_data/results/S100A8_age_stage.png", p_s100a8_age, width = 6, height = 5, dpi = 600)
+# ggsave("cs_project/cytokine_data/results/S100A8_age_stage.pdf", p_s100a8_age, width = 6, height = 5)

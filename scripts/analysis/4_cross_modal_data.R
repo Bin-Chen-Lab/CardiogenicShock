@@ -18,8 +18,6 @@ library(pheatmap)
 library(patchwork)
 library(logistf)
 
-
-
 output_dir <- "cs_project/multi_modality/results"
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -193,46 +191,3 @@ roc_all <- map_dfr(names(modality_sets), function(nm) {
   tibble(model = nm, auc = auc_val, ci_low = ci_val[1], ci_high = ci_val[3], specificity = roc_obj$specificities, sensitivity = roc_obj$sensitivities)
 }) %>% mutate(model_label = fct_reorder(sprintf("%s (AUC=%.3f, 95%% CI %.3f - %.3f)", model, auc, ci_low, ci_high), auc, .desc = TRUE))
 write.csv(roc_all, file.path(output_dir, "integrated_selected_features_LOOCV_predictions.csv"), row.names = FALSE)
-
-
-
-
-
-# # 6. Prediction based on z-scaled features # Need help from Rama
-# integrated_data <- read.csv("cs_project/multi_modality/results/multimodal_integrated_scaled_dataset.csv")
-# clinical_vars <- c("admission_labs_glucose_level_mg_dl", "admission_labs_calcium_level_total_mg_dl", "admission_labs_albumin_level_g_dl",
-#                   "admission_labs_nt_pro_bnp_ng_l", "admission_labs_lactate_mmol_l", "shock_onset_labs_glucose_level_mg_dl",
-#                   "shock_onset_labs_calcium_level_total_mg_dl", "shock_onset_labs_albumin_level_g_dl", "shock_onset_labs_nt_pro_bnp_ng_l", "shock_onset_labs_lactate_mmol_l")
-# cytokine_vars <- c("IL6", "ST2", "VEGFA", "S100A8", "IL8", "TroponinI")
-# rna_vars <- c("ACOT11", "ARG1", "FGFR2", "FN1", "KLKB1", "LRRN3", "OSBPL1A", "PEX11G", "RSPH14", "SEC14L5", "TRGV10" )
-# 
-# 
-# make_feature_roc <- function(data, vars, label) {
-#   x <- data %>% dplyr::select(all_of(vars)) %>% as.matrix()
-#   y <- data$outcome
-#   cv_fit <- cv.glmnet(x, y, family = "binomial", alpha = 0.5, nfolds = nrow(x), type.measure = "auc", keep = TRUE)
-#   pred <- as.numeric(cv_fit$fit.preval[, which.min(abs(cv_fit$lambda - cv_fit$lambda.1se))])
-#   roc_obj <- roc(y, -pred, levels = c(0, 1), quiet = TRUE)
-#   list(roc = tibble(specificity = roc_obj$specificities, sensitivity = roc_obj$sensitivities, modality = label, AUC = round(as.numeric(auc(roc_obj)), 3)),
-#        pred = tibble(specimen_id = data$specimen_id, outcome = y, pred = pred, pred_flipped = -pred, modality = label))
-# }
-# 
-# feature_res <- list(
-#   make_feature_roc(integrated_data, clinical_vars, "Clinical"),
-#   make_feature_roc(integrated_data, cytokine_vars, "Cytokine"),
-#   make_feature_roc(integrated_data, rna_vars, "RNA"),
-#   make_feature_roc(integrated_data, c(clinical_vars, cytokine_vars), "Clinical + Cytokine"),
-#   make_feature_roc(integrated_data, c(clinical_vars, rna_vars), "Clinical + RNA"),
-#   make_feature_roc(integrated_data, c(cytokine_vars, rna_vars), "Cytokine + RNA"),
-#   make_feature_roc(integrated_data, c(clinical_vars, cytokine_vars, rna_vars), "Integrated")
-# )
-# 
-# feature_roc_df <- bind_rows(lapply(feature_res, `[[`, "roc"))
-# feature_pred_df <- bind_rows(lapply(feature_res, `[[`, "pred"))
-# feature_roc_df %>% distinct(modality, AUC)
-# 
-# feature_roc_plot_df <- feature_roc_df %>% mutate(modality_auc = paste0(modality, " (AUC=", AUC, ")"))
-# p_feature_roc <- ggplot(feature_roc_plot_df, aes(1 - specificity, sensitivity, color = modality_auc)) + geom_path(linewidth = 1) +
-#   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray60") + coord_equal() + theme_pub() + theme(legend.position = "right") +
-#   labs(title = "Elastic-net prediction using z-scaled multimodal features", x = "1 - Specificity", y = "Sensitivity", color = NULL)
-# p_feature_roc

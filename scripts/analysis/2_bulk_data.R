@@ -323,8 +323,9 @@ stat_res_known <- scores_long_known %>% dplyr::group_by(pathway) %>% dplyr::summ
   dplyr::mutate(p_adj = p.adjust(p_wilcox, method = "BH"), Direction = dplyr::if_else(mean_D > mean_C, "Higher in Stage D", "Higher in Stage C")) %>% dplyr::arrange(p_adj)
 print(stat_res_known)
 # saveRDS(list(stat_res = stat_res_known, scores_long = scores_long_known), file = "cs_project/bulk_data/results/ssgsea_known_pathways_tpm_results.rds")
-saveRDS(list(stat_res = stat_res_known, scores_long = scores_long_known, target_pathways = target_pathways, cs_theme_lookup = cs_theme_lookup), file = "cs_project/bulk_data/results/ssgsea_known_pathways_tpm_results.rds")
-# # 15. Custom pathway set enrichment
+# saveRDS(list(stat_res = stat_res_known, scores_long = scores_long_known, target_pathways = target_pathways, cs_theme_lookup = cs_theme_lookup), file = "cs_project/bulk_data/results/ssgsea_known_pathways_tpm_results.rds")
+
+# # 15a. Custom pathway set enrichment - using DE genes
 # library(tidyverse)
 # library(clusterProfiler)
 # library(enrichplot)
@@ -346,7 +347,7 @@ saveRDS(list(stat_res = stat_res_known, scores_long = scores_long_known, target_
 # write.csv(gsea_df, file.path("cs_project/bulk_data/results/gsea_custom_metabolic.csv"), row.names = FALSE)
 # saveRDS(gsea_res, file.path("cs_project/bulk_data/results/gsea_res_custom_metabolic.rds"))
 
-# 15. Custom pathway set enrichment - II using TPM
+# 15b. Custom pathway set enrichment - II using TPM
 library(tidyverse)
 library(GSVA)
 library(clusterProfiler)
@@ -413,80 +414,58 @@ saveRDS(wgcna_results, file.path("cs_project/bulk_data/results/wgcna_results.rds
 
 
 
-
-# load("cs_project/bulk_data/count_data.RData")
-# ls()
-# for (nm in ls()) {
-#   x <- get(nm)
-#   cat("\n==", nm, "==\n")
-#   print(class(x))
-#   print(dim(x))
-#   if (!is.null(dim(x))) print(x[1:3, 1:3])
+# # Export RSEM-derived expression matrices to plain-text files for GEO submission: Optional
+# rdata_file <- "cs_project/bulk_data/count_data.RData"
+# meta_file  <- "cs_project/bulk_data/metadata_bulk.csv"
+# out_dir    <- "cs_project/geo_upload"
+# 
+# dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+# 
+# # ---- Load matrices ----------------------------------------------------------
+# load(rdata_file)   # loads: log2.fpkm.matrix, log2.read.count.matrix, log2.tpm.matrix
+# 
+# # ---- Select the samples being submitted (SCAI Stage C or D only) ------------
+# meta <- read.csv(meta_file, stringsAsFactors = FALSE)
+# meta <- meta[meta$SCAI.Stage %in% c("C", "D"), ]
+# keep_ids <- meta$SR.specimen.ID
+# cat("Samples to export:", length(keep_ids), "\n")   # expect 39
+# 
+# mats <- list(
+#   log2_read_count_matrix = log2.read.count.matrix,
+#   log2_fpkm_matrix       = log2.fpkm.matrix,
+#   log2_tpm_matrix        = log2.tpm.matrix
+# )
+# 
+# # ---- Sanity  ----------------------------------------------------------
+# for (nm in names(mats)) {
+#   missing <- setdiff(keep_ids, colnames(mats[[nm]]))
+#   if (length(missing) > 0) {
+#     stop(nm, ": these samples are missing from the matrix: ",
+#          paste(missing, collapse = ", "))
+#   }
+#   if (anyDuplicated(colnames(mats[[nm]]))) {
+#     stop(nm, ": duplicated column names found")
+#   }
 # }
-
-
-
-# Export RSEM-derived expression matrices to plain-text files for GEO submission
-# Input : gene.expression.RData (log2.read.count.matrix, log2.fpkm.matrix, log2.tpm.matrix)
-# Output: three tab-delimited .txt files, restricted to the 39 Stage C/D samples
-#
-# Edit the three paths below, then run:  Rscript export_matrices_for_geo.R
-
-rdata_file <- "cs_project/bulk_data/count_data.RData"
-meta_file  <- "cs_project/bulk_data/metadata_bulk.csv"                       # your clinical CSV (path on the server)
-out_dir    <- "cs_project/geo_upload"
-
-dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
-
-# ---- Load matrices ----------------------------------------------------------
-load(rdata_file)   # loads: log2.fpkm.matrix, log2.read.count.matrix, log2.tpm.matrix
-
-# ---- Select the samples being submitted (SCAI Stage C or D only) ------------
-meta <- read.csv(meta_file, stringsAsFactors = FALSE)
-meta <- meta[meta$SCAI.Stage %in% c("C", "D"), ]
-keep_ids <- meta$SR.specimen.ID
-cat("Samples to export:", length(keep_ids), "\n")   # expect 39
-
-mats <- list(
-  log2_read_count_matrix = log2.read.count.matrix,
-  log2_fpkm_matrix       = log2.fpkm.matrix,
-  log2_tpm_matrix        = log2.tpm.matrix
-)
-
-# ---- Sanity checks ----------------------------------------------------------
-for (nm in names(mats)) {
-  missing <- setdiff(keep_ids, colnames(mats[[nm]]))
-  if (length(missing) > 0) {
-    stop(nm, ": these samples are missing from the matrix: ",
-         paste(missing, collapse = ", "))
-  }
-  if (anyDuplicated(colnames(mats[[nm]]))) {
-    stop(nm, ": duplicated column names found")
-  }
-}
-
-# ---- Subset, order columns to match the sample sheet, and write -------------
-for (nm in names(mats)) {
-  m <- mats[[nm]][, keep_ids, drop = FALSE]
-  
-  out <- data.frame(gene_id = rownames(m), m,
-                    check.names = FALSE, stringsAsFactors = FALSE)
-  
-  out_file <- file.path(out_dir, paste0(nm, ".txt"))
-  write.table(out, file = out_file, sep = "\t",
-              quote = FALSE, row.names = FALSE)
-  
-  cat(sprintf("Wrote %s  (%d genes x %d samples)\n",
-              out_file, nrow(m), ncol(m)))
-}
-  
-# ---- Confirm the Stage E sample was excluded --------------------------------
-for (nm in names(mats)) {
-  chk <- read.delim(file.path(out_dir, paste0(nm, ".txt")),
-                    nrows = 1, check.names = FALSE)
-  stopifnot(!("SR2518012" %in% colnames(chk)))
-}
-cat("Check passed: SR2518012 (Stage E) not present in any output file.\n")
-
-
-
+# 
+# # ---- Subset, order columns to match the sample sheet, and write -------------
+# for (nm in names(mats)) {
+#   m <- mats[[nm]][, keep_ids, drop = FALSE]
+#   
+#   out <- data.frame(gene_id = rownames(m), m,
+#                     check.names = FALSE, stringsAsFactors = FALSE)
+#   
+#   out_file <- file.path(out_dir, paste0(nm, ".txt"))
+#   write.table(out, file = out_file, sep = "\t",
+#               quote = FALSE, row.names = FALSE)
+#   
+#   cat(sprintf("Wrote %s  (%d genes x %d samples)\n",
+#               out_file, nrow(m), ncol(m)))
+# }
+#   
+# # ---- Confirm the Stage E sample was excluded --------------------------------
+# for (nm in names(mats)) {
+#   chk <- read.delim(file.path(out_dir, paste0(nm, ".txt")),
+#                     nrows = 1, check.names = FALSE)
+#   stopifnot(!("SR2518012" %in% colnames(chk)))
+# }

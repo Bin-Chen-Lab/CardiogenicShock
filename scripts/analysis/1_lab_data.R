@@ -182,7 +182,7 @@ all_variables_table <- publication_table %>%
 # write.xlsx(list("Numeric Variables" = numeric_table, "Binary Variables" = binary_table, "Categorical Variables" = categorical_table), file.path(output_dir, "CS_publication_tables_by_type.xlsx"), overwrite = TRUE)
 
 # ============================================================
-# Admission vs Shock analysis
+# Admission vs Shock analysis: Optional
 # ============================================================
 # clinical_data <- read_csv('cs_project/clinical_data/clinical_results/CS_full_clinical_data_cleaned.csv', show_col_types = FALSE)
 # head(clinical_data)
@@ -248,11 +248,6 @@ admshock_by_stage <- dplyr::bind_rows(admshock_C, admshock_D)
 write.csv(admshock_by_stage, file.path("cs_project/clinical_data/clinical_results/CS_Admission_vs_Shock_paired_results_byStage.csv"), row.names = FALSE)
 saveRDS(list(admshock_C = admshock_C, admshock_D = admshock_D, admshock_by_stage = admshock_by_stage, clinical_data = clinical_data), file = "cs_project/clinical_data/clinical_results/CS_Admission_vs_Shock_byStage.rds")
 
-
-
-
-
-
 # ============================================================
 # Table 1: Demographics, Stage C vs Stage D
 # ============================================================
@@ -308,7 +303,7 @@ write.csv(demo, file.path("cs_project/clinical_data/clinical_results/Table1_Demo
 
 
 
-# # Sampe mismatch check
+# # Sampe mismatch check: Optional
 # library(dplyr)
 # normalize_sr_id <- function(sr) {
 #   digits <- gsub("[^0-9]", "", sr)
