@@ -88,7 +88,6 @@ Outputs are written to `results/` subfolders inside `cs_project/` (e.g. `bulk_da
 
 **Bioconductor:** DESeq2, apeglm, clusterProfiler, enrichplot, ReactomePA, reactome.db, org.Hs.eg.db, AnnotationDbi, GSVA, KEGGREST
 
-Package versions: see `sessionInfo.txt` (to be added).
 
 ---
 
