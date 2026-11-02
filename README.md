@@ -98,7 +98,7 @@ Package versions: see `sessionInfo.txt` (to be added).
 
 ## Data availability
 
-- **Bulk RNA-seq:** deposited in GEO (accession: _GSE______, to be added_). `2_bulk_data.R` contains the GEO export.
+- **Bulk RNA-seq:** deposited in GEO ([GSE349137](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE349137)). `2_bulk_data.R` contains the GEO export.
 - **Clinical, cytokine, and sample metadata:** contain patient-level information and are not publicly available. De-identified data are available from the corresponding author on reasonable request, subject to IRB approval and a data use agreement.
 
 ---
