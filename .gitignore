@@ -1,0 +1,12 @@
+data/
+results/
+*.csv
+*.tsv
+*.xlsx
+*.rds
+*.RData
+*.h5ad
+*.h5
+.Rhistory
+.Rproj.user/
+.DS_Store
